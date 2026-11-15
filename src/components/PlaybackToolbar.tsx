@@ -1,4 +1,4 @@
-import { RotateCcw } from 'lucide-react';
+import { Pin, RotateCcw, Star } from 'lucide-react';
 import { BUTTON_BASE, BUTTON_IDLE, INPUT_BASE } from '@/lib/ui';
 
 const CAPO_OPTIONS = [0, 1, 2, 3, 4, 5, 6];
@@ -17,6 +17,9 @@ interface PlaybackToolbarProps {
   onCapoChange: (capo: number) => void;
   originalKey: string;
   playKey: string;
+  teamKeyTranspose: number | undefined;
+  onSaveTeamKey: () => void;
+  onClearTeamKey: () => void;
 }
 
 export default function PlaybackToolbar({
@@ -27,7 +30,12 @@ export default function PlaybackToolbar({
   onCapoChange,
   originalKey,
   playKey,
+  teamKeyTranspose,
+  onSaveTeamKey,
+  onClearTeamKey,
 }: PlaybackToolbarProps) {
+  const hasTeamKey = teamKeyTranspose !== undefined;
+  const isOnTeamKey = hasTeamKey && transpose === teamKeyTranspose;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end gap-3">
@@ -70,6 +78,28 @@ export default function PlaybackToolbar({
                 {step.label}
               </button>
             ))}
+            <button
+              type="button"
+              title={
+                !hasTeamKey
+                  ? 'Save Group Key'
+                  : isOnTeamKey
+                    ? `Clear Team Key`
+                    : `Save current key as new Team Key`
+              }
+              aria-label={!hasTeamKey ? 'Save Group Key' : isOnTeamKey ? 'Clear Team Key' : 'Save Group Key'}
+              onClick={isOnTeamKey ? onClearTeamKey : onSaveTeamKey}
+              className={`${BUTTON_BASE} ${
+                isOnTeamKey
+                  ? 'border border-amber-400/50 bg-amber-400/15 text-amber-600 dark:text-amber-300'
+                  : BUTTON_IDLE
+              } px-2.5`}
+            >
+              {hasTeamKey ? <Star className={`h-4 w-4 ${isOnTeamKey ? 'fill-current' : ''}`} /> : <Pin className="h-4 w-4" />}
+              <span className="text-xs font-semibold">
+                {isOnTeamKey ? originalKey : 'Save Group Key'}
+              </span>
+            </button>
           </div>
         </div>
 

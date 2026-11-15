@@ -1,12 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Gauge, Music2 } from 'lucide-react';
 import DisplayToolbar from '@/components/DisplayToolbar';
 import LyricsPanel from '@/components/LyricsPanel';
 import PlaybackToolbar from '@/components/PlaybackToolbar';
+import TabEditor from '@/components/TabEditor';
 import VideoHub from '@/components/VideoHub';
-import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { prefersFlats, transposeChord } from '@/lib/chords';
 import { parseLyrics } from '@/lib/lyrics';
+import { usePersistentState } from '@/hooks/usePersistentState';
 import { GLASS_CARD } from '@/lib/ui';
 import type { Song, Typography } from '@/types';
 
@@ -31,13 +32,17 @@ export default function SongPanel({
   onToggleLyrics,
   onSaveLyrics,
 }: SongPanelProps) {
+  const [teamKeys, setTeamKeys] = usePersistentState<Record<string, number>>('chordbook:team-keys', {});
   const [transpose, setTranspose] = useState(0);
   const [capo, setCapo] = useState(0);
   const [videoHidden, setVideoHidden] = useState(false);
-  const [autoScrolling, setAutoScrolling] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(35);
+  const [tabOpen, setTabOpen] = useState(false);
 
-  useAutoScroll(autoScrolling, scrollSpeed, () => setAutoScrolling(false));
+  const savedTeamKey = teamKeys[song.id];
+
+  useEffect(() => {
+    if (savedTeamKey !== undefined) setTranspose(savedTeamKey);
+  }, [savedTeamKey, song.id]);
 
   const lines = useMemo(() => parseLyrics(song.lyrics), [song.lyrics]);
 
@@ -46,6 +51,18 @@ export default function SongPanel({
   const playKey = transposeChord(song.key, shift, prefersFlats(soundingKey));
   const flats = prefersFlats(playKey);
   const displayChord = (chord: string) => transposeChord(chord, shift, flats);
+
+  const saveTeamKey = () => {
+    setTeamKeys((current) => ({ ...current, [song.id]: transpose }));
+  };
+  const clearTeamKey = () => {
+    setTeamKeys((current) => {
+      if (current[song.id] === undefined) return current;
+      const next = { ...current };
+      delete next[song.id];
+      return next;
+    });
+  };
 
   return (
     <div className="min-w-0 flex-1">
@@ -70,6 +87,11 @@ export default function SongPanel({
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3 py-1 font-mono text-xs font-bold text-zinc-950">
               Key {soundingKey || 'Not set'}
             </span>
+            {savedTeamKey !== undefined && transpose === savedTeamKey && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/50 bg-amber-400/15 px-3 py-1 font-mono text-xs font-bold text-amber-600 dark:text-amber-300">
+                ★ Team Key: {soundingKey}
+              </span>
+            )}
           </div>
         </header>
 
@@ -88,21 +110,24 @@ export default function SongPanel({
             onCapoChange={setCapo}
             originalKey={soundingKey || 'Not set'}
             playKey={playKey || 'Not set'}
+            teamKeyTranspose={savedTeamKey}
+            onSaveTeamKey={saveTeamKey}
+            onClearTeamKey={clearTeamKey}
           />
           <div className="h-px bg-zinc-200 dark:bg-white/10" />
           <DisplayToolbar
             typography={typography}
             onTypographyChange={onTypographyChange}
-            autoScrolling={autoScrolling}
-            onToggleAutoScroll={() => setAutoScrolling((value) => !value)}
-            scrollSpeed={scrollSpeed}
-            onScrollSpeedChange={setScrollSpeed}
             showChords={showChords}
             showLyrics={showLyrics}
             onToggleChords={onToggleChords}
             onToggleLyrics={onToggleLyrics}
           />
         </div>
+
+        {tabOpen && (
+          <TabEditor songId={song.id} songTitle={song.title} bpm={song.bpm} />
+        )}
 
         <LyricsPanel
           lyrics={song.lyrics}
@@ -112,6 +137,8 @@ export default function SongPanel({
           showLyrics={showLyrics}
           displayChord={displayChord}
           onSave={onSaveLyrics}
+          tabOpen={tabOpen}
+          onToggleTab={() => setTabOpen((value) => !value)}
         />
       </div>
     </div>

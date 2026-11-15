@@ -49,3 +49,22 @@ export interface ServiceRecord {
   date: string;
   songIds: string[];
 }
+
+export type TabRhythm = 'quarter' | 'eighth' | 'sixteenth';
+
+export interface TabMeasure {
+  id: string;
+  columns: string[][];
+  rhythms: TabRhythm[];
+}
+
+export interface TabRiff {
+  id: string;
+  name: string;
+  measures: TabMeasure[];
+}
+
+export interface SongTab {
+  riffs: TabRiff[];
+  tempo: number;
+}

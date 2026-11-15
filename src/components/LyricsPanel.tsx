@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Guitar } from 'lucide-react';
 import ChordSheet from '@/components/ChordSheet';
 import LyricsEditor from '@/components/LyricsEditor';
 import ToggleSwitch from '@/components/ToggleSwitch';
@@ -14,6 +14,8 @@ interface LyricsPanelProps {
   showLyrics: boolean;
   displayChord: (chord: string) => string;
   onSave: (lyrics: string) => void;
+  tabOpen: boolean;
+  onToggleTab: () => void;
 }
 
 export default function LyricsPanel({
@@ -24,6 +26,8 @@ export default function LyricsPanel({
   showLyrics,
   displayChord,
   onSave,
+  tabOpen,
+  onToggleTab,
 }: LyricsPanelProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(lyrics);
@@ -45,6 +49,19 @@ export default function LyricsPanel({
           Lyrics &amp; Chords
         </p>
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={onToggleTab}
+            aria-pressed={tabOpen}
+            className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition-all duration-200 active:scale-95 ${
+              tabOpen
+                ? 'border border-transparent bg-sky-500 font-semibold text-white shadow-md'
+                : 'border border-zinc-200 bg-white/70 text-zinc-700 hover:border-zinc-300 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10'
+            }`}
+          >
+            <Guitar className="h-4 w-4" />
+            <span>🎸 TAB</span>
+          </button>
           {editing && (
             <button
               type="button"

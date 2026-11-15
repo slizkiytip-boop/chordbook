@@ -27,11 +27,25 @@ const CHORD_EM: Record<ChordStyle, Record<ChordVariant, number>> = {
   'clean-bold': { inline: 0.72, grid: 0.95 },
 };
 
+const CHORD_BASE_PX = 18;
+
+const GRID_CONTAINER_STYLE: CSSProperties = {
+  gap: 'calc(var(--chord-base) * 0.6 * var(--chord-scale))',
+  paddingTop: 'calc(var(--chord-base) * 0.3 * var(--chord-scale))',
+  paddingBottom: 'calc(var(--chord-base) * 0.3 * var(--chord-scale))',
+};
+
+const COMPACT_CONTAINER_STYLE: CSSProperties = {
+  gap: 'calc(var(--chord-base) * 0.35 * var(--chord-scale))',
+  paddingTop: 'calc(var(--chord-base) * 0.1 * var(--chord-scale))',
+  paddingBottom: 'calc(var(--chord-base) * 0.1 * var(--chord-scale))',
+};
+
 function ChordBadge({ children, variant, chordStyle }: { children: string; variant: ChordVariant; chordStyle: ChordStyle }) {
   return (
     <span
       className={CHORD_CLASSES[chordStyle][variant]}
-      style={{ fontSize: `calc(${CHORD_EM[chordStyle][variant]}em * var(--chord-scale))` }}
+      style={{ fontSize: `calc(var(--chord-base) * ${CHORD_EM[chordStyle][variant]} * var(--chord-scale))` }}
     >
       {children}
     </span>
@@ -43,6 +57,7 @@ export default function ChordSheet({ lines, typography, showChords, showLyrics, 
   const sheetStyle = {
     fontSize: `${typography.fontSize}px`,
     '--chord-scale': typography.chordScale / 100,
+    '--chord-base': `${CHORD_BASE_PX}px`,
   } as CSSProperties;
 
   return (
@@ -51,15 +66,21 @@ export default function ChordSheet({ lines, typography, showChords, showLyrics, 
       style={sheetStyle}
     >
       {lines.map((line, index) => {
+        const compact = !showLyrics;
+
         switch (line.kind) {
           case 'blank':
-            return <div key={index} className="h-[0.9em]" />;
+            return compact ? null : <div key={index} className="h-[0.9em]" />;
 
           case 'section':
             return (
               <h3
                 key={index}
-                className="mb-2 mt-6 border-l-2 border-[var(--accent)] pl-3 text-[0.5em] font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400"
+                className={`border-l-2 border-[var(--accent)] pl-3 font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 ${
+                  compact
+                    ? 'mb-1 mt-3 text-[0.6em]'
+                    : 'mb-2 mt-6 text-[0.5em]'
+                }`}
               >
                 {line.label}
               </h3>
@@ -68,7 +89,7 @@ export default function ChordSheet({ lines, typography, showChords, showLyrics, 
           case 'chords':
             if (!showChords) return null;
             return (
-              <div key={index} className="flex flex-wrap gap-[0.6em] py-[0.3em]">
+              <div key={index} className="flex flex-wrap" style={compact ? COMPACT_CONTAINER_STYLE : GRID_CONTAINER_STYLE}>
                 {line.chords.map((chord, chordIndex) => (
                   <ChordBadge key={chordIndex} variant="grid" chordStyle={chordStyle}>
                     {displayChord(chord)}
@@ -82,7 +103,7 @@ export default function ChordSheet({ lines, typography, showChords, showLyrics, 
             if (!showLyrics) {
               if (!showChords || chordCount === 0) return null;
               return (
-                <div key={index} className="flex flex-wrap gap-[0.6em] py-[0.3em]">
+                <div key={index} className="flex flex-wrap" style={COMPACT_CONTAINER_STYLE}>
                   {line.segments.map((segment, segmentIndex) =>
                     segment.chord ? (
                       <ChordBadge key={segmentIndex} variant="grid" chordStyle={chordStyle}>
@@ -99,7 +120,7 @@ export default function ChordSheet({ lines, typography, showChords, showLyrics, 
                 {line.segments.map((segment, segmentIndex) => (
                   <span key={segmentIndex} className="flex flex-col">
                     {showChords && (
-                      <span className="flex items-end" style={{ height: 'calc(1.4em * var(--chord-scale))' }}>
+                      <span className="flex items-end" style={{ height: 'calc(var(--chord-base) * 1.4 * var(--chord-scale))' }}>
                         {segment.chord && (
                           <ChordBadge variant="inline" chordStyle={chordStyle}>
                             {displayChord(segment.chord)}
