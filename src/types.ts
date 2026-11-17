@@ -68,3 +68,5 @@ export interface SongTab {
   riffs: TabRiff[];
   tempo: number;
 }
+
+export type StageViewMode = 'full' | 'chords' | 'lyrics';

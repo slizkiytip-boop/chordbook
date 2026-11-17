@@ -8,8 +8,8 @@ import type { ChordStyle, FontFamilyKey, Typography } from '@/types';
 interface TypographyPopoverProps {
   typography: Typography;
   onChange: (patch: Partial<Typography>) => void;
-  showLyrics: boolean;
-  onToggleLyrics: () => void;
+  showLyrics?: boolean;
+  onToggleLyrics?: () => void;
 }
 
 interface Placement {
@@ -217,26 +217,29 @@ export default function TypographyPopover({ typography, onChange, showLyrics, on
               onChange={(chordStyle) => onChange({ chordStyle })}
             />
 
-            <div className="h-px bg-zinc-200 dark:bg-white/10" />
-
-            <button
-              type="button"
-              onClick={onToggleLyrics}
-              className="flex items-center justify-between gap-3"
-            >
-              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Show Lyrics</span>
-              <span
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                  showLyrics ? 'bg-[var(--accent)]' : 'bg-zinc-300 dark:bg-zinc-700'
-                }`}
-              >
-                <span
-                  className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${
-                    showLyrics ? 'translate-x-5' : 'translate-x-0.5'
-                  }`}
-                />
-              </span>
-            </button>
+            {onToggleLyrics && (
+              <>
+                <div className="h-px bg-zinc-200 dark:bg-white/10" />
+                <button
+                  type="button"
+                  onClick={onToggleLyrics}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Show Lyrics</span>
+                  <span
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                      showLyrics ? 'bg-[var(--accent)]' : 'bg-zinc-300 dark:bg-zinc-700'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${
+                        showLyrics ? 'translate-x-5' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </span>
+                </button>
+              </>
+            )}
           </div>,
           placement.host,
         )}
